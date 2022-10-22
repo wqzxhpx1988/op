@@ -113,7 +113,7 @@ jobs:
         
     - name: SSH远程连接（制作.config配置文件）
       if: env.SSH_ACTIONS == 'true' || (github.event.inputs.ssh == 'ssh')
-      uses: danshui-git/debugger-action@main
+      uses: makebl/debugger-action@main
       env:
         TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
@@ -154,7 +154,7 @@ jobs:
         echo "${{ env.SOURCE }}$(date +%Y年%m月%d号%H时%M分%S秒)" > ${{matrix.target}}/build/${{matrix.target}}/start-up/start
         cd ${{matrix.target}}
         git add .
-        git commit -m "启动${{matrix.target}}编译${{env.TARGET_PROFILE}}固件"
+        git commit -m "启动${{matrix.target}}"
         git push --force "https://${{ secrets.REPO_TOKEN }}@github.com/${{github.repository}}" HEAD:main
         
     - name: 电报机器人或pushplus信息通知
@@ -196,7 +196,7 @@ jobs:
     
     - name: 删除releases
       if: env.REPO_TOKEN
-      uses: danshui-git/delete-older-releases@main
+      uses: shidahuilang/delete-older-releases@main
       with:
         repo: ${{ github.repository }}
         keep_latest: ${{ env.keep_latest }}
