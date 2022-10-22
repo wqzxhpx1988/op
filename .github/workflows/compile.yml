@@ -1,3 +1,4 @@
+# REPO_TOKEN密匙制作教程：https://git.io/jm.md
 name: compile
 on:
   workflow_dispatch:
@@ -5,7 +6,7 @@ on:
     branches:
       - main
     paths:
-      - 'build/Lede_source/start-up/start'
+      - 'build/Tianling_source/start-up/start'
 
 env:
   Github: https://github.com/${{github.repository}}
@@ -18,8 +19,6 @@ env:
   PUSH_PLUS_TOKEN: ${{ secrets.PUSH_PLUS_TOKEN }}
   TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
   TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-  DOCKER_ID: ${{ secrets.DOCKER_ID }}
-  DOCKER_PASSWD: ${{ secrets.DOCKER_PASSWD }}  
   TZ: Asia/Shanghai
 
 jobs:
@@ -31,18 +30,18 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [Lede_source]
+        target: [Tianling_source]
         
         # [Lede_source,Lienol_source,Mortal_source,Tianling_source,openwrt_amlogic]
 
     steps:
     - name: 准备结束
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: 读取脚本
       run: |
         export matrixtarget="${{ matrix.target }}"
-        git clone --depth 1 -b main https://github.com/makebl/common ${GITHUB_WORKSPACE}/build/common
+        git clone --depth 1 -b main https://github.com/shidahuilang/common ${GITHUB_WORKSPACE}/build/common
         mv -f ${GITHUB_WORKSPACE}/build/common/*.sh ${GITHUB_WORKSPACE}/build/${{matrix.target}}/
         chmod -R +x ${GITHUB_WORKSPACE}/build
         source $GITHUB_WORKSPACE/build/${{matrix.target}}/common.sh && Diy_repo_url
@@ -53,7 +52,6 @@ jobs:
         DEBIAN_FRONTEND: noninteractive
       run: |
         source $GITHUB_WORKSPACE/build/${{matrix.target}}/common.sh && Diy_update
-        echo "DOCKERTAG=${{ secrets.DOCKER_ID }}/openwrt-6p:latest" >> $GITHUB_ENV
     
     - name: 下载"${{matrix.target}}"源码
       working-directory: /${{matrix.target}}
@@ -71,20 +69,13 @@ jobs:
       run: |
         cd openwrt
         source $BUILD_PATH/common.sh && Diy_menu
-
-        
+    
     - name: 超级加速
       if: env.USE_CACHEWRTBUILD == 'true'
-      uses: klever1988/cachewrtbuild@test
+      uses: klever1988/cachewrtbuild@main
       with:
-       ccache: 'true'
-       #是否跳过工具链编译
-       skip: false
-       #清空缓存
-       clean: false
-       #是否缓存工具链目录
-       toolchain: true
-       prefix: ${{ github.workspace }}/openwrt
+        ccache: 'true'
+        prefix: ${{ github.workspace }}/openwrt
 
     - name: 生成配置
       run: |
@@ -123,13 +114,13 @@ jobs:
         make -j$(($(nproc) + 1)) || make -j1 V=s
         echo "date=$(date "+%Y%m%d%H%M%S")" >> $GITHUB_ENV
         
-    - name: 打包晶晨系
+    - name: 打包晶晨
       continue-on-error: true
       if: steps.compile.outcome == 'success' && env.AUTOMATIC_AMLOGIC == 'true'
       run: |
         cd $GITHUB_WORKSPACE
         source $BUILD_PATH/common.sh && Package_amlogic
-    - name: 整理固件文件夹(需配合diy-part.sh设定使用)
+    - name: 整理文件夹
       continue-on-error: true
       id: organizer
       run: |
@@ -139,12 +130,11 @@ jobs:
     - name: 上传固件在 github actions
       continue-on-error: true
       if: steps.compile.outcome == 'success' && env.UPLOAD_FIRMWARE == 'true'
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@main
       with:
         name: ${{ env.SOURCE }}-${{ env.TARGET_PROFILE }}-firmware-${{ env.Firmware_Date }}
         path: ${{ env.FIRMWARE }}
 
-          
     - name: 上传固件到「WeTransfer」
       continue-on-error: true
       if: steps.compile.outcome == 'success' && env.UPLOAD_WETRANSFER == 'true'
@@ -155,14 +145,16 @@ jobs:
         sed -i "s/Download Link/WETRANSFER/g" wetransfer.log
         echo "::warning file=wetransfer.com::$(cat wetransfer.log | grep https)"
     
+
     - name: 发布固件
       continue-on-error: true
       if: steps.compile.outcome == 'success' && env.UPLOAD_RELEASE == 'true' && env.REPO_TOKEN
-      uses: ncipollo/release-action@v1
+      uses: ncipollo/release-action@main
       with:
         name: ${{ env.SOURCE }}-${{ env.TARGET_PROFILE }}
         tag: ${{ env.date }}
         token: ${{ secrets.REPO_TOKEN }}
+        allowUpdates: true
         bodyFile: "update_log.txt"
         artifacts: "${{ env.FIRMWARE }}/*"
         
@@ -170,13 +162,14 @@ jobs:
       id: regular
       continue-on-error: true
       if: steps.compile.outcome == 'success' && env.REGULAR_UPDATE == 'true' && env.REPO_TOKEN
-      uses: svenstaro/upload-release-action@v2
+      uses: ncipollo/release-action@main
       with:
-        repo_token: ${{ secrets.REPO_TOKEN }}
-        file: openwrt/bin/Firmware/*
+        name: AutoUpdate
         tag: AutoUpdate
-        overwrite: true
-        file_glob: true
+        token: ${{ secrets.REPO_TOKEN }}
+        allowUpdates: true
+        bodyFile: "AutoUpdate_log.txt"
+        artifacts: "openwrt/bin/Firmware/*"
         
     - name: 发送[在线更新固件]至云端2
       continue-on-error: true
@@ -189,13 +182,14 @@ jobs:
     - name: 发送[在线更新固件]至云端3
       continue-on-error: true
       if: steps.regular.outcome == 'success' && env.REGULAR_UPDATE == 'true' && env.REPO_TOKEN
-      uses: svenstaro/upload-release-action@v2
+      uses: ncipollo/release-action@main
       with:
-        repo_token: ${{ secrets.REPO_TOKEN }}
-        file: Github_Tags/*
+        name: AutoUpdate
         tag: AutoUpdate
-        overwrite: true
-        file_glob: true
+        token: ${{ secrets.REPO_TOKEN }}
+        allowUpdates: true
+        bodyFile: "AutoUpdate_log.txt"
+        artifacts: "Github_Tags/*"
 
     - name: 电报机器人或pushplus信息通知
       continue-on-error: true
