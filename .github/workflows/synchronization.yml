@@ -35,7 +35,7 @@ jobs:
       if: env.REPO_TOKEN && (github.event.inputs.again-fork == 'fork')
       run: |
         cd $GITHUB_WORKSPACE
-        git clone -b main https://github.com/makebl/openwrt.git shangyou
+        git clone -b main https://github.com/makebl/op.git shangyou
         git clone -b main https://github.com/${{github.repository}}.git repogx
         
         rm -rf ${GITHUB_WORKSPACE}/shangyou/build/*/.config
