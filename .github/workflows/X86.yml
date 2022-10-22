@@ -51,12 +51,12 @@ jobs:
     
     steps:
     - name: 准备结束
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: 读取脚本设置
       run: |
         export matrixtarget="${{ matrix.target }}"
-        git clone --depth 1 -b main https://github.com/makebl/common ${GITHUB_WORKSPACE}/build/common
+        git clone --depth 1 -b main https://github.com/shidahuilang/common ${GITHUB_WORKSPACE}/build/common
         mv -f ${GITHUB_WORKSPACE}/build/common/*.sh ${GITHUB_WORKSPACE}/build/${{matrix.target}}/
         chmod -R +x ${GITHUB_WORKSPACE}/build
         source $GITHUB_WORKSPACE/build/${{matrix.target}}/common.sh && Diy_repo_url
@@ -106,7 +106,6 @@ jobs:
       run: |
         cd openwrt
         source $BUILD_PATH/common.sh && Diy_menu
-
         
     - name: SSH远程连接（制作.config配置文件）
       if: env.SSH_ACTIONS == 'true' || (github.event.inputs.ssh == 'ssh')
@@ -126,7 +125,7 @@ jobs:
     - name: 上传.config配置文件在 github actions
       continue-on-error: true
       if: env.UPLOAD_CONFIG == 'true'
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@main
       with:
         name: .config_${{ env.SOURCE }}_${{ env.TARGET_PROFILE }}_${{ env.Firmware_Date }}
         path: config.txt
@@ -184,7 +183,7 @@ jobs:
     
     - name: 清理Actions空间
       if: env.REPO_TOKEN
-      uses: Mattraks/delete-workflow-runs@main
+      uses: Mattraks/delete-workflow-runs@v2
       with:
           token: ${{ secrets.REPO_TOKEN }}
           repository: ${{ github.repository }}
@@ -193,7 +192,7 @@ jobs:
     
     - name: 删除releases
       if: env.REPO_TOKEN
-      uses: dev-drprasad/delete-older-releases@master
+      uses: shidahuilang/delete-older-releases@main
       with:
         repo: ${{ github.repository }}
         keep_latest: ${{ env.keep_latest }}
