@@ -4,7 +4,7 @@
 #
 #
 
-name: x86
+name: Tianling
 on:
   workflow_dispatch:
     inputs:
