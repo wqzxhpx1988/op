@@ -34,6 +34,7 @@ EOF
 # 把bootstrap替换成argon为源码必选主题（可自行修改您要的,主题名称必须对,比如下面代码的[argon],源码内必须有该主题,要不然编译失败）
 sed -i "s/bootstrap/argon/ig" feeds/luci/collections/luci/Makefile
 
+git clone https://github.com/shidahuilang/openwrt-package package/shidahuilang
 
 # 编译多主题时,设置固件默认主题（可自行修改您要的,主题名称必须对,比如下面代码的[argon],和肯定编译了该主题,要不然进不了后台）
 #sed -i "/exit 0/i\uci set luci.main.mediaurlbase='/luci-static/argon' && uci commit luci" "${FIN_PATH}"
