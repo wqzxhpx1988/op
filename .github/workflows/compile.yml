@@ -81,7 +81,7 @@ jobs:
         source ${BUILD_PATH}/common.sh && Diy_menu
 
 
-    - name: Generate cache mixkey
+    - name: 混合缓存生成
       id: gen_cache_mixkey
       working-directory: ${{ env.WORKING_DIR }}
       run: |
@@ -92,7 +92,7 @@ jobs:
         mixkey1="${target_device_arch_1}-${gcc_hash}-${ldd_hash}"
         mixkey2="${target_device_arch_2}-${gcc_hash}-${ldd_hash}"
     
-    - name: Cache1
+    - name: 超级加速1
       if: env.USE_CACHEWRTBUILD == 'true'
       uses: HiGarfield/cachewrtbuild@main
       with:
@@ -101,7 +101,7 @@ jobs:
           prefix: ${{ github.workspace }}/openwrt
           skip_saving: 'true'
       
-    - name: Cache2
+    - name: 超级加速2
       if: env.USE_CACHEWRTBUILD2 == 'true'
       uses: HiGarfield/cachewrtbuild@main
       with:
