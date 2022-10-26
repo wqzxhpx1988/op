@@ -87,7 +87,7 @@ jobs:
       with:
           ccache: 'true'
           mixkey: ${{ steps.gen_cache_mixkey.outputs.mixkey1 }}
-          prefix: ${{ env.WORKING_DIR }}
+          prefix: ${{ github.workspace }}/openwrt
           skip_saving: 'true'
       
     - name: Cache2
@@ -96,7 +96,7 @@ jobs:
       with:
           ccache: 'true'
           mixkey: ${{ steps.gen_cache_mixkey.outputs.mixkey2 }}
-          prefix: ${{ env.WORKING_DIR }}
+          prefix: ${{ github.workspace }}/openwrt
           skip_saving: 'true'
 
     - name: 生成配置文件
