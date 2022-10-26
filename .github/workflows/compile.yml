@@ -91,7 +91,7 @@ jobs:
           skip_saving: 'true'
       
     - name: Cache2
-      if: env.USE_CACHEWRTBUILD == 'true'
+      if: env.USE_CACHEWRTBUILD2 == 'true'
       uses: HiGarfield/cachewrtbuild@main
       with:
           ccache: 'true'
