@@ -79,7 +79,18 @@ jobs:
       run: |
         cd openwrt
         source ${BUILD_PATH}/common.sh && Diy_menu
-    
+
+
+    - name: Generate cache mixkey
+      id: gen_cache_mixkey
+      working-directory: ${{ env.WORKING_DIR }}
+      run: |
+        target_device_arch_1="x86-64"
+        target_device_arch_2="rockchip"
+        gcc_hash=$(gcc --version | sha256sum | awk '{print substr($1,1,8)}')
+        ldd_hash=$(ldd --version | sha256sum | awk '{print substr($1,1,8)}')
+        mixkey1="${target_device_arch_1}-${gcc_hash}-${ldd_hash}"
+        mixkey2="${target_device_arch_2}-${gcc_hash}-${ldd_hash}"
     
     - name: Cache1
       if: env.USE_CACHEWRTBUILD == 'true'
@@ -95,7 +106,7 @@ jobs:
       uses: HiGarfield/cachewrtbuild@main
       with:
           ccache: 'true'
-          mixkey: 'rockchip'
+          mixkey: ${{ steps.gen_cache_mixkey.outputs.mixkey2 }}
           prefix: ${{ github.workspace }}/openwrt
           skip_saving: 'true'
 
