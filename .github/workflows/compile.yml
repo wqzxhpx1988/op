@@ -95,7 +95,7 @@ jobs:
       uses: HiGarfield/cachewrtbuild@main
       with:
           ccache: 'true'
-          mixkey: ${{ steps.gen_cache_mixkey.outputs.mixkey2 }}
+          mixkey: 'rockchip'
           prefix: ${{ github.workspace }}/openwrt
           skip_saving: 'true'
 
