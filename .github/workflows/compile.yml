@@ -82,7 +82,7 @@ jobs:
     
     
     - name: Cache1
-        uses: HiGarfield/cachewrtbuild@main
+      uses: HiGarfield/cachewrtbuild@main
         with:
           ccache: 'true'
           mixkey: ${{ steps.gen_cache_mixkey.outputs.mixkey1 }}
@@ -90,7 +90,7 @@ jobs:
           skip_saving: 'true'
       
     - name: Cache2
-        uses: HiGarfield/cachewrtbuild@main
+      uses: HiGarfield/cachewrtbuild@main
         with:
           ccache: 'true'
           mixkey: ${{ steps.gen_cache_mixkey.outputs.mixkey2 }}
