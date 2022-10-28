@@ -83,7 +83,7 @@ jobs:
 
     - name: 混合缓存生成
       id: gen_cache_mixkey
-      working-directory: /${{matrix.target}}
+      working-directory: ${GITHUB_WORKSPACE}
       run: |
       
         target_device_arch_1="x86_64"
