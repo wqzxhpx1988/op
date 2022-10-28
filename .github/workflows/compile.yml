@@ -40,7 +40,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [Lede_source,Lienol_source,Mortal_source,Tianling_source,openwrt_amlogic]
+        target: [Lede_source,Mortal_source]
         
         # [Lede_source,Lienol_source,Mortal_source,Tianling_source,openwrt_amlogic]
 
@@ -85,8 +85,7 @@ jobs:
       id: gen_cache_mixkey
       working-directory: /${{matrix.target}}
       run: |
-        target_device_arch_1="Lede_source"
-        target_device_arch_2="Tianling_source"
+
         gcc_hash=$(gcc --version | sha256sum | awk '{print substr($1,1,8)}')
         ldd_hash=$(ldd --version | sha256sum | awk '{print substr($1,1,8)}')
         mixkey1="${target_device_arch_1}-${gcc_hash}-${ldd_hash}"
@@ -101,7 +100,7 @@ jobs:
       with:
           ccache: 'true'
           mixkey: ${{ steps.gen_cache_mixkey.outputs.mixkey1 }}
-          prefix: ${GITHUB_WORKSPACE}
+          prefix: ${{matrix.target}}
           skip_saving: 'true'
       
     - name: 超级加速2
