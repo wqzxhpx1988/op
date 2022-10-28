@@ -83,7 +83,7 @@ jobs:
 
     - name: 混合缓存生成
       id: gen_cache_mixkey
-      working-directory: ${GITHUB_WORKSPACE}
+      working-directory: /${{matrix.target}}
       run: |
         target_device_arch_1="LEDE"
         target_device_arch_2="immortalwrt"
@@ -101,7 +101,7 @@ jobs:
       with:
           ccache: 'true'
           mixkey: ${{ steps.gen_cache_mixkey.outputs.mixkey1 }}
-          prefix: ${{ github.workspace }}
+          prefix: ${{matrix.target}}
           skip_saving: 'true'
       
     - name: 超级加速2
@@ -110,7 +110,7 @@ jobs:
       with:
           ccache: 'true'
           mixkey: ${{ steps.gen_cache_mixkey.outputs.mixkey2 }}
-          prefix: ${{ github.workspace }}
+          prefix: ${{matrix.target}}
           skip_saving: 'true'
 
     - name: 生成配置文件
