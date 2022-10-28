@@ -83,7 +83,7 @@ jobs:
 
     - name: 混合缓存生成
       id: gen_cache_mixkey
-      working-directory: /${{matrix.target}}
+      working-directory: /"${REPO_BRANCH}"
       run: |
         target_device_arch_1="LEDE"
         target_device_arch_2="immortalwrt"
