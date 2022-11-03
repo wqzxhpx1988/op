@@ -59,12 +59,13 @@ jobs:
         chmod -R +x ${GITHUB_WORKSPACE}/build
         source ${GITHUB_WORKSPACE}/build/${{matrix.target}}/common.sh && Diy_repo_url
         source ${GITHUB_WORKSPACE}/build/${{matrix.target}}/common.sh && Diy_settings
-        echo "DOCKERTAG=${{ secrets.DOCKER_ID }}/openwrt-6p:latest" >> $GITHUB_ENV
+        
     - name: 部署编译环境
       env:
         DEBIAN_FRONTEND: noninteractive
       run: |
         source ${GITHUB_WORKSPACE}/build/${{matrix.target}}/common.sh && Diy_update
+        echo "DOCKERTAG=${{ secrets.DOCKER_ID }}/openwrt-6p:latest" >> $GITHUB_ENV
     
     - name: 下载"${{matrix.target}}"源码
       working-directory: /${{matrix.target}}
@@ -176,6 +177,7 @@ jobs:
       with:
         name: ${{ env.SOURCE }}-${{ env.TARGET_PROFILE }}-firmware-${{ env.Firmware_Date }}
         path: ${{ env.FIRMWARE }}
+        
     - name: 设置Docker编译信息
       uses: docker/setup-buildx-action@master
       if: env.DOCKER_ID && env.DOCKER_PASSWD
