@@ -59,7 +59,7 @@ jobs:
         chmod -R +x ${GITHUB_WORKSPACE}/build
         source ${GITHUB_WORKSPACE}/build/${{matrix.target}}/common.sh && Diy_repo_url
         source ${GITHUB_WORKSPACE}/build/${{matrix.target}}/common.sh && Diy_settings
-    
+        echo "DOCKERTAG=${{ secrets.DOCKER_ID }}/openwrt-6p:latest" >> $GITHUB_ENV
     - name: 部署编译环境
       env:
         DEBIAN_FRONTEND: noninteractive
