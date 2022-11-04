@@ -59,7 +59,7 @@ sed -i '/to-ports 53/d' "${ZZZ_PATH}"
 sed -i 's/PATCHVER:=5.15/PATCHVER:=6.0/g' target/linux/x86/Makefile
 
 
-svn co https://github.com/tcsr200722/luci-app-cpufreq package/luci-app-cpufreq
+# svn co https://github.com/tcsr200722/luci-app-cpufreq package/luci-app-cpufreq
 # svn co https://github.com/shidahuilang/OpenClash package/luci-app-xiaolaoshu
 # 更改使用OpenClash的分支代码，把下面的master改成dev就使用dev分支，改master就是用master分支，改错的话就默认使用master分支
 export OpenClash_branch='master'
