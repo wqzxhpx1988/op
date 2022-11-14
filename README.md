@@ -1,11 +1,9 @@
-## `【大灰狼独家优化】（IPV6大全版  5.18 内核【带DOCKER】`
+（IPV6大全版  5.18 内核【带DOCKER】`
 
-- 大灰狼编译库`X86-R2C-R2S-R4S-R5S-N1-小米MI`等多系列全部适配OTA自动升级
-- 默认IP地址：`192.168.2.1`
-- 账户：`root`   密码：`空`
+- 编译库`X86-R2C-R2S-R4S-R5S-N1-小米MI`等多系列全部适配OTA自动升级
+- 默认IP地址：`192.168.5.1`
+- 账户：`root`   密码：`passwall`
  
- ## [`固件下载地址`](https://github.com/shidahuilang/openwrt/releases/tag/AutoUpdate)
- ## [`插件下载地址`](https://github.com/shidahuilang/ipk/releases)
 - ================================================================
 - 首先需要打开 Openwrt 主页,点击系统-TTYD 命令窗,或者使用putty和openwrt后台luci插件定时更新 
 - 输入`openwrt`即可进入固件升级菜单                            
