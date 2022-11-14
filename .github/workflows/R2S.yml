@@ -4,7 +4,7 @@
 #
 #
 
-name: nanopi_r2s
+name: r2s
 on:
   workflow_dispatch:
     inputs:
@@ -48,7 +48,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [nanopi_r2s]
+        target: [r2s]
 
         # [Lede_source,Lienol_source,Mortal_source,Tianling_source,openwrt_amlogic]
 

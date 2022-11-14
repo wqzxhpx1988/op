@@ -51,7 +51,7 @@ jobs:
     - name: 准备结束
       uses: actions/checkout@v3
 
-    - name: 读取脚本设置
+    - name: 读取脚本
       run: |
         export matrixtarget="${{ matrix.target }}"
         git clone --depth 1 -b main https://github.com/makebl/common ${GITHUB_WORKSPACE}/build/common
@@ -59,14 +59,14 @@ jobs:
         chmod -R +x ${GITHUB_WORKSPACE}/build
         source ${GITHUB_WORKSPACE}/build/${{matrix.target}}/common.sh && Diy_repo_url
         source ${GITHUB_WORKSPACE}/build/${{matrix.target}}/common.sh && Diy_settings
-        
-    - name: 部署编译环境
+    
+    - name: 部署环境
       env:
         DEBIAN_FRONTEND: noninteractive
       run: |
         source ${GITHUB_WORKSPACE}/build/${{matrix.target}}/common.sh && Diy_update
         echo "DOCKERTAG=${{ secrets.DOCKER_ID }}/openwrt-6p:latest" >> $GITHUB_ENV
-    
+        
     - name: 下载"${{matrix.target}}"源码
       working-directory: /${{matrix.target}}
       run: |
@@ -79,47 +79,19 @@ jobs:
         source ${GITHUB_WORKSPACE}/build/${{matrix.target}}/common.sh && Diy_variable
         source ${GITHUB_WORKSPACE}/build/${{matrix.target}}/common.sh && Diy_Notice
  
-    - name: 加载源,补丁和自定义设置
+    - name: 加载补丁
       run: |
         cd openwrt
         source ${BUILD_PATH}/common.sh && Diy_menu
-
-
-    - name: 混合缓存生成
-      id: gen_cache_mixkey
-      working-directory: /${{matrix.target}}
-      run: |
-      
-        target_device_arch_1="x86_64"
-        target_device_arch_2="rockchip_armv8"
-
-        gcc_hash=$(gcc --version | sha256sum | awk '{print substr($1,1,8)}')
-        ldd_hash=$(ldd --version | sha256sum | awk '{print substr($1,1,8)}')
-        mixkey1="${target_device_arch_1}-${gcc_hash}-${ldd_hash}"
-        mixkey2="${target_device_arch_2}-${gcc_hash}-${ldd_hash}"
         
-        echo "mixkey1=$mixkey1" >> $GITHUB_OUTPUT
-        echo "mixkey2=$mixkey2" >> $GITHUB_OUTPUT
-    
-    - name: 超级加速1
+    - name: 超级加速
       if: env.USE_CACHEWRTBUILD == 'true'
-      uses: HiGarfield/cachewrtbuild@main
+      uses: klever1988/cachewrtbuild@main
       with:
-          ccache: 'true'
-          mixkey: ${{ steps.gen_cache_mixkey.outputs.mixkey1 }}
-          prefix: ${{ github.workspace }}/openwrt
-          skip_saving: 'true'
-      
-    - name: 超级加速2
-      if: env.USE_CACHEWRTBUILD2 == 'true'
-      uses: HiGarfield/cachewrtbuild@main
-      with:
-          ccache: 'true'
-          mixkey: ${{ steps.gen_cache_mixkey.outputs.mixkey2 }}
-          prefix: ${{ github.workspace }}/openwrt
-          skip_saving: 'true'
+        ccache: 'true'
+        prefix: ${{ github.workspace }}/openwrt
 
-    - name: 生成配置文件
+    - name: 生成配置
       run: |
         cd openwrt
         source ${BUILD_PATH}/common.sh && Diy_menu2
@@ -140,7 +112,7 @@ jobs:
         source ${BUILD_PATH}/upgrade.sh && GET_TARGET_INFO
         source ${BUILD_PATH}/common.sh && Diy_xinxi
         
-    - name: 下载软件包
+    - name: 下载软件
       id: package
       run: |
         cd openwrt
@@ -148,7 +120,7 @@ jobs:
         find dl -size -1024c -exec ls -l {} \;
         find dl -size -1024c -exec rm -f {} \;
     
-    - name: 开始编译固件
+    - name: 编译固件
       id: compile
       run: |
         cd openwrt
@@ -156,19 +128,32 @@ jobs:
         make -j$(($(nproc) + 1)) || make -j1 V=s
         echo "date=$(date "+%Y%m%d%H%M%S")" >> ${GITHUB_ENV}
         
-    - name: 打包晶晨系列固件
+    - name: 打包固件
       continue-on-error: true
       if: steps.compile.outcome == 'success' && env.AUTOMATIC_AMLOGIC == 'true'
       run: |
         cd ${GITHUB_WORKSPACE}
         source ${BUILD_PATH}/common.sh && Package_amlogic
-
-    - name: 整理固件文件夹(需配合diy-part.sh设定使用)
+        
+    - name: 整理固件
       continue-on-error: true
       id: organizer
       run: |
         cd openwrt
         source ${BUILD_PATH}/common.sh && Diy_firmware
+        #echo "DOCKERTAG=${{ secrets.DOCKER_ID }}/openwrt-6p:latest" >> $GITHUB_ENV
+        
+    - name: 部署固件到服务器
+      uses: easingthemes/ssh-deploy@main
+      with:
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        ARGS: "-avzr --exclude="
+       # SOURCE: openwrt/bin/targets
+        SOURCE: ${GITHUB_WORKSPACE}/build/${{matrix.target}}/
+        REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
+        REMOTE_PORT: ${{ secrets.REMOTE_PORT }}
+        REMOTE_USER: root
+        TARGET: "/www/wwwroot/${{ secrets.REMOTE_HOST }}/openwrt/firmware/${{matrix.target}}/" 
         
     - name: 上传固件在 github actions
       continue-on-error: true
@@ -177,30 +162,7 @@ jobs:
       with:
         name: ${{ env.SOURCE }}-${{ env.TARGET_PROFILE }}-firmware-${{ env.Firmware_Date }}
         path: ${{ env.FIRMWARE }}
-        
-    - name: 设置Docker编译信息
-      uses: docker/setup-buildx-action@master
-      if: env.DOCKER_ID && env.DOCKER_PASSWD
 
-    - name: 登录DockerHub
-      uses: docker/login-action@master
-      if: env.DOCKER_ID && env.DOCKER_PASSWD
-      with:
-        username: ${{ secrets.DOCKER_ID }}
-        password: ${{ secrets.DOCKER_PASSWD }}
-        
-    - name: 编译docker镜像
-      uses: docker/build-push-action@master
-      continue-on-error: true
-      if: env.DOCKER_ID && env.DOCKER_PASSWD && ! contains(github.event.action, 'noser')
-      with:
-        platforms: ${{ env.ARCH }}
-        file: Dockerfile
-        context: .
-        push: true
-        tags: |
-          ${{ secrets.DOCKER_ID }}/openwrt-6p:${{matrix.target}}
-          ${{ env.DOCKERTAG }}   
           
     - name: 上传固件到「WeTransfer」
       continue-on-error: true
@@ -256,6 +218,30 @@ jobs:
         allowUpdates: true
         bodyFile: "AutoUpdate_log.txt"
         artifacts: "Github_Tags/*"
+        
+    - name: 设置Docker
+      uses: docker/setup-buildx-action@master
+      if: env.DOCKER_ID && env.DOCKER_PASSWD
+
+    - name: 登录DockerHub
+      uses: docker/login-action@master
+      if: env.DOCKER_ID && env.DOCKER_PASSWD
+      with:
+        username: ${{ secrets.DOCKER_ID }}
+        password: ${{ secrets.DOCKER_PASSWD }}
+
+    - name: 上传docker映像
+      uses: docker/build-push-action@master
+      continue-on-error: true
+     # if: env.DOCKER_ID && env.DOCKER_PASSWD && ! contains(github.event.action, 'noser') && github.event.client_payload.target == 'x86_64'
+      with:
+        platforms: ${{ env.ARCH }}
+        file: Dockerfile
+        context: .
+        push: true
+        tags: |
+          ${{ secrets.DOCKER_ID }}/openwrt-6p:${{ matrix.target }}
+          ${{ env.DOCKERTAG }}
 
     - name: 电报机器人或pushplus信息通知
       continue-on-error: true

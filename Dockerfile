@@ -1,8 +1,6 @@
 FROM scratch
 
-MAINTAINER makebl "https://github.com/makebl/op"
+MAINTAINER Kiddin9 "https://github.com/makebl/op"
 
-#ADD *.tar.gz /
-ADD *.tar.gz /rootfs.img.gz
-#ADD openwrt-x86-64-generic-squashfs-rootfs.img.gz /
-ADD openwrt/bin/Firmware/*"
+#ADD openwrt/bin/targets/*/*/*rootfs*.tar.gz /
+ADD openwrt/bin/targets/*/*/*rootfs*.img.gz /
