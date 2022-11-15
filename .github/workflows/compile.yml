@@ -142,18 +142,7 @@ jobs:
         cd openwrt
         source ${BUILD_PATH}/common.sh && Diy_firmware
        
-        
-    - name: 部署固件到服务器
-      uses: easingthemes/ssh-deploy@main
-      with:
-        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-        ARGS: "-avzr --exclude="
-        SOURCE: ${{matrix.target}}
-       
-        REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
-        REMOTE_PORT: ${{ secrets.REMOTE_PORT }}
-        REMOTE_USER: root
-        TARGET: "/www/wwwroot/${{ secrets.REMOTE_HOST }}/openwrt/firmware/${{matrix.target}}/" 
+      
         
     - name: 上传固件在 github actions
       continue-on-error: true
@@ -218,6 +207,8 @@ jobs:
         allowUpdates: true
         bodyFile: "AutoUpdate_log.txt"
         artifacts: "Github_Tags/*"
+             
+    
         
     - name: 设置Docker
       uses: docker/setup-buildx-action@master
